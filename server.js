@@ -5,7 +5,8 @@ const io = require('socket.io')(http, {
   cors: { origin: "*" }
 });
 const fs = require('fs');
-const DB_FILE = '/data/db.json'; // แก้: ใช้ Render Disk แทน
+const https = require('https'); // เพิ่ม: สำหรับ self-ping
+const DB_FILE = '/data/db.json'; // ใช้ Render Disk
 
 app.use(express.static('public'));
 
@@ -24,7 +25,6 @@ try {
     recent: [],
     states: { car: { speed: 0.9, soundOn: true }, Motorcycle: { speed: 0.9, soundOn: true }, tta: { speed: 0.9, soundOn: true } }
   };
-  // สร้างโฟลเดอร์ถ้ายังไม่มี
   if (!fs.existsSync('/data')) fs.mkdirSync('/data');
 }
 
@@ -203,6 +203,16 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => console.log('เครื่องหลุด:', socket.id));
 });
+
+// เพิ่ม: Self-ping ทุก 5 นาที กัน Render หลับ
+const SELF_URL = 'https://queuenew2569.onrender.com'; // เปลี่ยนเป็น URL ของคุณ
+setInterval(() => {
+  https.get(SELF_URL, (res) => {
+    console.log(`Keep-alive ping: ${res.statusCode}`);
+  }).on('error', (err) => {
+    console.log('Keep-alive error:', err.message);
+  });
+}, 5 * 60 * 1000);
 
 const PORT = process.env.PORT || 3000;
 http.listen(PORT, () => {
