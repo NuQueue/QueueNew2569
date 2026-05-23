@@ -45,7 +45,10 @@ io.on('connection', (socket) => {
     if (queueDB.recent.length > 20) queueDB.recent.pop();
     io.emit('update_state', queueDB);
     console.log(`Counter ${counter} เรียก ${currentCall.ticket}`);
-    setTimeout(() => { callingLock = false; }, 500);
+  socket.on('speak_finished', () => {
+  callingLock = false;
+  console.log('ปลดล็อค: อ่านจบแล้ว');
+});
   });
 
   socket.on('add_queue', ({ room, plate }) => {
