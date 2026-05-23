@@ -6,7 +6,7 @@ const io = require('socket.io')(http, {
 });
 const fs = require('fs');
 const https = require('https'); // เพิ่ม: สำหรับ self-ping
-const DB_FILE = '/data/db.json'; // ใช้ Render Disk
+const DB_FILE = './db.json';
 
 app.use(express.static('public'));
 
@@ -25,7 +25,6 @@ try {
     recent: [],
     states: { car: { speed: 0.9, soundOn: true }, Motorcycle: { speed: 0.9, soundOn: true }, tta: { speed: 0.9, soundOn: true } }
   };
-  if (!fs.existsSync('/data')) fs.mkdirSync('/data');
 }
 
 function saveDB() {
