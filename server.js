@@ -4,14 +4,14 @@ const http = require('http').createServer(app);
 const io = require('socket.io')(http, {
   cors: { origin: "*" }
 });
-const fs = require('fs'); // เพิ่ม: สำหรับอ่านเขียนไฟล์
-const DB_FILE = 'db.json'; // เพิ่ม: ชื่อไฟล์เก็บคิว
+const fs = require('fs'); // เพิ่ม: อ่านเขียนไฟล์
+const DB_FILE = 'db.json'; // เพิ่ม: ไฟล์เก็บคิว
 
 app.use(express.static('public'));
 
 const TYPES = { car: { prefix: 'A' }, Motorcycle: { prefix: 'B' }, tta: { prefix: 'C' } };
 
-// แก้: โหลดคิวจากไฟล์ ถ้าไม่มีไฟล์ให้ใช้ค่าเริ่มต้น
+// แก้: โหลดคิวจากไฟล์ ถ้าไม่มีให้ใช้ค่าเริ่มต้น
 let queueDB;
 try {
   queueDB = JSON.parse(fs.readFileSync(DB_FILE));
@@ -27,7 +27,7 @@ try {
   };
 }
 
-// เพิ่ม: ฟังก์ชันเซฟไฟล์ ใช้ซ้ำๆ
+// เพิ่ม: ฟังก์ชันเซฟไฟล์
 function saveDB() {
   fs.writeFileSync(DB_FILE, JSON.stringify(queueDB));
 }
@@ -58,10 +58,19 @@ io.on('connection', (socket) => {
     queueDB.recent.unshift(currentCall);
     if (queueDB.recent.length > 20) queueDB.recent.pop();
     io.emit('update_state', queueDB);
-    saveDB(); // เพิ่ม: เซฟลงไฟล์
+    saveDB(); // เพิ่ม: เซฟคิวลงไฟล์
     console.log(`Counter ${counter} เรียก ${currentCall.ticket}`);
+
+    // เพิ่ม: กันล็อคค้าง ถ้า 3 วิไม่มี speak_finished ให้ปลดเอง
+    setTimeout(() => {
+      if (callingLock) {
+        callingLock = false;
+        console.log('ปลดล็อคอัตโนมัติหลัง 3 วิ');
+      }
+    }, 3000);
   });
 
+  // เพิ่ม: รับสัญญาณว่าอ่านจบแล้วจากจอ Customer
   socket.on('speak_finished', () => {
     callingLock = false;
     console.log('ปลดล็อค: อ่านจบแล้ว');
@@ -97,7 +106,7 @@ io.on('connection', (socket) => {
     queueDB.queueData[room].push(newQueue);
     queueDB.plateHistory[today].push(plateUpper);
     io.emit('update_state', queueDB); // อัปเดตข้อมูลทุกเครื่อง
-    saveDB(); // เพิ่ม: เซฟลงไฟล์
+    saveDB(); // เพิ่ม: เซฟคิวลงไฟล์
     socket.emit('queue_added_success', newQueue); // เด้ง Modal เฉพาะเครื่องที่กด
     console.log('ออกคิวใหม่:', newQueue.queue, newQueue.type, plateUpper);
   });
@@ -112,7 +121,7 @@ io.on('connection', (socket) => {
       states: queueDB.states
     };
     io.emit('update_state', queueDB);
-    saveDB(); // เพิ่ม: เซฟลงไฟล์
+    saveDB(); // เพิ่ม: เซฟคิวลงไฟล์
     console.log('Reset ระบบทั้งหมด');
   });
 
@@ -156,7 +165,7 @@ io.on('connection', (socket) => {
 
     if (found) {
       io.emit('update_state', queueDB);
-      saveDB(); // เพิ่ม: เซฟลงไฟล์
+      saveDB(); // เพิ่ม: เซฟคิวลงไฟล์
       console.log(`แก้คิว ${oldQueue} เป็นทะเบียน ${newPlateUpper}`);
     } else {
       socket.emit('call_failed', 'ไม่พบคิวที่ต้องการแก้');
@@ -183,7 +192,7 @@ io.on('connection', (socket) => {
 
     if (found) {
       io.emit('update_state', queueDB);
-      saveDB(); // เพิ่ม: เซฟลงไฟล์
+      saveDB(); // เพิ่ม: เซฟคิวลงไฟล์
       console.log(`ลบคิว ${queue}`);
     } else {
       socket.emit('call_failed', 'ไม่พบคิวที่ต้องการลบ');
