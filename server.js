@@ -44,7 +44,7 @@ io.on('connection', (socket) => {
 
   socket.on('call_next', ({ counter, room }) => {
     if (callingLock) {
-      socket.emit('call_failed', 'มีคนกดเรียกคิวอยู่');
+      socket.emit('call_failed', 'รอเสียงอ่านจบก่อน');
       return;
     }
     callingLock = true;
@@ -65,12 +65,13 @@ io.on('connection', (socket) => {
     saveDB();
     console.log(`Counter ${counter} เรียก ${currentCall.ticket}`);
 
+    // กันค้าง: ถ้า 15 วิยังไม่มีจอไหนส่ง speak_finished มา ให้ปลดล็อคเอง
     setTimeout(() => {
       if (callingLock) {
         callingLock = false;
-        console.log('ปลดล็อคอัตโนมัติหลัง 3 วิ');
+        console.log('ปลดล็อคอัตโนมัติหลัง 15 วิ - กันค้าง');
       }
-    }, 3000);
+    }, 15000);
   });
 
   socket.on('speak_finished', () => {
