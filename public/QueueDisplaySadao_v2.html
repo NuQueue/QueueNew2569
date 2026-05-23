@@ -53,7 +53,6 @@ input[type="range"] { width: 120px; }
 .card.type { font-size: 11px; opacity: 0.7; }
 .muted { opacity: 0.8; font-size: 12px; }
 .selectroom { display: flex; align-items: center; gap: 8px; }
-#debug { position: fixed; bottom: 0; left: 0; right: 0; background: #000; color: #0f0; padding: 8px; font-family: monospace; font-size: 11px; max-height: 120px; overflow: auto; z-index: 9999; }
 #voiceUnlock { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px; }
 #voiceUnlock button { font-size: 24px; padding: 20px 40px; background: #22c08a; color: #000; font-weight: bold; }
 </style>
@@ -65,7 +64,6 @@ input[type="range"] { width: 120px; }
   <button id="unlockVoiceBtn">คลิกเพื่อเปิดเสียง</button>
   <div style="color: #aaa; font-size: 14px;">Chrome บังคับให้กด 1 ครั้งก่อนถึงจะพูดได้</div>
 </div>
-<div id="debug">DEBUG: เริ่มทำงาน...</div>
 <header>
   <h1>Queue System</h1>
   <div class="mode-select">
@@ -131,8 +129,7 @@ input[type="range"] { width: 120px; }
   </section>
 </main>
 <script>
-const DEBUG = document.getElementById('debug');
-function log(msg) { console.log(msg); DEBUG.innerHTML += '<br>' + new Date().toLocaleTimeString() + ': ' + msg; DEBUG.scrollTop = DEBUG.scrollHeight; }
+function log(msg) { console.log(msg); }
 
 const socket = io();
 const TYPES = { car: { prefix: 'A', name: 'Car', color: '#1e88e5' }, Motorcycle: { prefix: 'B', name: 'Motorcycle', color: '#43a047' }, tta: { prefix: 'C', name: 'TTA', color: '#fb8c00' } };
@@ -173,7 +170,7 @@ socket.on('update_state', (serverDB) => {
 });
 
 socket.on('call_failed', (msg) => {
-  log('⚠️ ' + msg);
+  log('⚠ ' + msg);
   alert(msg);
 });
 
@@ -217,12 +214,12 @@ function doSpeak(text, rate) {
   u.rate = rate || 0.9;
   const enVoice = voices.find(v => v.lang === 'en-US' || v.lang.startsWith('en'));
   if (enVoice) u.voice = enVoice;
-  
+
   u.onend = () => {
-    socket.emit('speak_finished'); // เพิ่มบรรทัดนี้ บอกเซิร์ฟว่าอ่านจบแล้ว
+    socket.emit('speak_finished');
     setTimeout(() => processSpeechQueue(), 300);
   };
-  
+
   u.onerror = () => setTimeout(() => processSpeechQueue(), 300);
   speechSynthesis.speak(u);
 }
