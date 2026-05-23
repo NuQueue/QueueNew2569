@@ -217,7 +217,12 @@ function doSpeak(text, rate) {
   u.rate = rate || 0.9;
   const enVoice = voices.find(v => v.lang === 'en-US' || v.lang.startsWith('en'));
   if (enVoice) u.voice = enVoice;
-  u.onend = () => setTimeout(() => processSpeechQueue(), 300);
+  
+  u.onend = () => {
+    socket.emit('speak_finished'); // เพิ่มบรรทัดนี้ บอกเซิร์ฟว่าอ่านจบแล้ว
+    setTimeout(() => processSpeechQueue(), 300);
+  };
+  
   u.onerror = () => setTimeout(() => processSpeechQueue(), 300);
   speechSynthesis.speak(u);
 }
