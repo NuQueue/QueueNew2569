@@ -93,8 +93,6 @@ input[type="range"] { width: 120px; }
       </div>
     </div>
     <div class="row" style="margin-top:10px">
-      <input id="plateInput" placeholder="ทะเบียนรถ (ถ้ามี)" style="width:150px">
-      <button id="addQueue" class="btn-ok">ออกคิว</button>
       <button id="repeat">Repeat last</button>
       <button id="resetAll" class="btn-warn">Reset all types</button>
       <button id="testVoice">Test voice</button>
@@ -293,11 +291,6 @@ $('#chipOfficerCar').onclick = () => switchRoom('car');
 $('#chipOfficerMotorcycle').onclick = () => switchRoom('Motorcycle');
 $('#chipOfficerTTA').onclick = () => switchRoom('tta');
 $('#chipDisplay').onclick = () => { showDisplayView(); render(); };
-$('#addQueue').onclick = () => {
-  const plate = $('#plateInput').value.trim();
-  socket.emit('add_queue', { room: currentRoom, plate });
-  $('#plateInput').value = '';
-};
 $('#resetAll').onclick = () => {
   if (confirm(`Reset all?`)) socket.emit('reset_all');
 };
