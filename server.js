@@ -4,19 +4,33 @@ const http = require('http').createServer(app);
 const io = require('socket.io')(http, {
   cors: { origin: "*" }
 });
+const fs = require('fs'); // เพิ่ม: สำหรับอ่านเขียนไฟล์
+const DB_FILE = 'db.json'; // เพิ่ม: ชื่อไฟล์เก็บคิว
 
 app.use(express.static('public'));
 
 const TYPES = { car: { prefix: 'A' }, Motorcycle: { prefix: 'B' }, tta: { prefix: 'C' } };
 
-let queueDB = {
-  queueData: { car: [], Motorcycle: [], tta: [] },
-  counters: { car: 0, Motorcycle: 0, tta: 0 },
-  plateHistory: {}, // { '2026-05-21': ['ABC123', 'XYZ999'] }
-  activeCalls: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null, 8: null, 9: null, 10: null },
-  recent: [],
-  states: { car: { speed: 0.9, soundOn: true }, Motorcycle: { speed: 0.9, soundOn: true }, tta: { speed: 0.9, soundOn: true } }
-};
+// แก้: โหลดคิวจากไฟล์ ถ้าไม่มีไฟล์ให้ใช้ค่าเริ่มต้น
+let queueDB;
+try {
+  queueDB = JSON.parse(fs.readFileSync(DB_FILE));
+  console.log('โหลดคิวจาก db.json สำเร็จ');
+} catch (e) {
+  queueDB = {
+    queueData: { car: [], Motorcycle: [], tta: [] },
+    counters: { car: 0, Motorcycle: 0, tta: 0 },
+    plateHistory: {}, // { '2026-05-21': ['ABC123', 'XYZ999'] }
+    activeCalls: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null, 8: null, 9: null, 10: null },
+    recent: [],
+    states: { car: { speed: 0.9, soundOn: true }, Motorcycle: { speed: 0.9, soundOn: true }, tta: { speed: 0.9, soundOn: true } }
+  };
+}
+
+// เพิ่ม: ฟังก์ชันเซฟไฟล์ ใช้ซ้ำๆ
+function saveDB() {
+  fs.writeFileSync(DB_FILE, JSON.stringify(queueDB));
+}
 
 let callingLock = false;
 
@@ -44,11 +58,13 @@ io.on('connection', (socket) => {
     queueDB.recent.unshift(currentCall);
     if (queueDB.recent.length > 20) queueDB.recent.pop();
     io.emit('update_state', queueDB);
+    saveDB(); // เพิ่ม: เซฟลงไฟล์
     console.log(`Counter ${counter} เรียก ${currentCall.ticket}`);
+  });
+
   socket.on('speak_finished', () => {
-  callingLock = false;
-  console.log('ปลดล็อค: อ่านจบแล้ว');
-});
+    callingLock = false;
+    console.log('ปลดล็อค: อ่านจบแล้ว');
   });
 
   socket.on('add_queue', ({ room, plate }) => {
@@ -81,6 +97,7 @@ io.on('connection', (socket) => {
     queueDB.queueData[room].push(newQueue);
     queueDB.plateHistory[today].push(plateUpper);
     io.emit('update_state', queueDB); // อัปเดตข้อมูลทุกเครื่อง
+    saveDB(); // เพิ่ม: เซฟลงไฟล์
     socket.emit('queue_added_success', newQueue); // เด้ง Modal เฉพาะเครื่องที่กด
     console.log('ออกคิวใหม่:', newQueue.queue, newQueue.type, plateUpper);
   });
@@ -95,6 +112,7 @@ io.on('connection', (socket) => {
       states: queueDB.states
     };
     io.emit('update_state', queueDB);
+    saveDB(); // เพิ่ม: เซฟลงไฟล์
     console.log('Reset ระบบทั้งหมด');
   });
 
@@ -117,14 +135,14 @@ io.on('connection', (socket) => {
       if (idx!== -1) {
         found = true;
         const oldPlate = queueDB.queueData[room][idx].plate;
-        
+
         if (newPlateUpper!== oldPlate && queueDB.plateHistory[today]?.includes(newPlateUpper)) {
           socket.emit('call_failed', `ทะเบียน ${newPlateUpper} มีในระบบแล้ว`);
           return;
         }
-        
+
         queueDB.queueData[room][idx].plate = newPlateUpper;
-        
+
         if (queueDB.plateHistory[today]) {
           const oldIdx = queueDB.plateHistory[today].indexOf(oldPlate);
           if (oldIdx!== -1) queueDB.plateHistory[today].splice(oldIdx, 1);
@@ -135,9 +153,10 @@ io.on('connection', (socket) => {
         break;
       }
     }
-    
+
     if (found) {
       io.emit('update_state', queueDB);
+      saveDB(); // เพิ่ม: เซฟลงไฟล์
       console.log(`แก้คิว ${oldQueue} เป็นทะเบียน ${newPlateUpper}`);
     } else {
       socket.emit('call_failed', 'ไม่พบคิวที่ต้องการแก้');
@@ -147,23 +166,24 @@ io.on('connection', (socket) => {
   socket.on('delete_queue', ({ queue }) => {
     let found = false;
     const today = new Date().toISOString().slice(0, 10);
-    
+
     ['car','Motorcycle','tta'].forEach(room => {
       const idx = queueDB.queueData[room].findIndex(q => q.queue === queue);
       if (idx!== -1) {
         found = true;
         const deletedPlate = queueDB.queueData[room][idx].plate;
         queueDB.queueData[room].splice(idx, 1);
-        
+
         if (queueDB.plateHistory[today]) {
           const pIdx = queueDB.plateHistory[today].indexOf(deletedPlate);
           if (pIdx!== -1) queueDB.plateHistory[today].splice(pIdx, 1);
         }
       }
     });
-    
+
     if (found) {
       io.emit('update_state', queueDB);
+      saveDB(); // เพิ่ม: เซฟลงไฟล์
       console.log(`ลบคิว ${queue}`);
     } else {
       socket.emit('call_failed', 'ไม่พบคิวที่ต้องการลบ');
