@@ -6,7 +6,7 @@ const io = require('socket.io')(http, {
 });
 const fs = require('fs');
 const https = require('https');
-const DB_FILE = './db.json';
+const DB_FILE = './db.json'; // เปลี่ยนจาก /data/db.json
 
 app.use(express.static('public'));
 
@@ -30,6 +30,7 @@ try {
 function saveDB() {
   try {
     fs.writeFileSync(DB_FILE, JSON.stringify(queueDB));
+    console.log('เซฟ DB สำเร็จ');
   } catch (err) {
     console.log('เซฟไม่สำเร็จ:', err.message);
   }
@@ -77,8 +78,9 @@ io.on('connection', (socket) => {
     console.log('ปลดล็อค: อ่านจบแล้ว');
   });
 
-  // เพิ่ม: รับค่า Speed แล้วเซฟลง db.json
+  // เพิ่มใหม่: รับค่า Speed จากหน้าบ้าน
   socket.on('set_speed', ({ room, speed }) => {
+    console.log('รับ set_speed:', room, speed);
     if (queueDB.states[room] && typeof speed === 'number') {
       queueDB.states[room].speed = speed;
       saveDB();
