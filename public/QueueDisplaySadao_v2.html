@@ -63,6 +63,7 @@ input[type="range"] { width: 120px; }
   <div style="color: #fff; font-size: 20px; text-align: center;">🔊 กดปุ่มเพื่อเปิดใช้งานเสียง</div>
   <button id="unlockVoiceBtn">คลิกเพื่อเปิดเสียง</button>
   <div style="color: #aaa; font-size: 14px;">Chrome บังคับให้กด 1 ครั้งก่อนถึงจะพูดได้</div>
+</div>
 <header>
   <h1>Queue System</h1>
   <div class="mode-select">
@@ -154,7 +155,6 @@ function loadVoices() {
   if (voices.length > 0) {
     voiceReady = true;
     log('✅ โหลดเสียงสำเร็จ: ' + voices.length + ' เสียง');
-    console.log(voices.map(v => v.name));
   }
 }
 speechSynthesis.onvoiceschanged = loadVoices;
@@ -219,10 +219,10 @@ function doSpeak(text, rate) {
   const u = new SpeechSynthesisUtterance(text);
   u.lang = 'en-US';
   u.rate = rate || 0.9;
-  
+
   const voiceType = db.states[currentRoom]?.voiceType || 'auto';
   let selectedVoice = null;
-  
+
   if (voiceType === 'male') {
     selectedVoice = voices.find(v => v.lang.startsWith('en') && /male|david|mark|alex|daniel|fred|google uk english male/i.test(v.name));
   } else if (voiceType === 'female') {
@@ -230,7 +230,7 @@ function doSpeak(text, rate) {
   } else if (voiceType === 'child') {
     selectedVoice = voices.find(v => v.lang.startsWith('en') && /child|kid/i.test(v.name));
   }
-  
+
   u.voice = selectedVoice || voices.find(v => v.lang.startsWith('en')) || voices[0];
 
   u.onend = () => {
@@ -316,7 +316,7 @@ $('#resetAll').onclick = () => {
   if (confirm(`Reset all?`)) socket.emit('reset_all');
 };
 $('#repeat').onclick = () => { if (db.recent.length > 0) { const last = db.recent[0]; speak(`Repeat, Number, ${spellTicket(last.ticket)}, Counter, ${last.counter}`); } };
-$('#testVoice').onclick = () => { speak(`Test, Number, A, zero, zero, zero, one, Counter, one`); };
+$('#testVoice').onclick = () => { speak(`Test, Number, A, zero, zero, one, Counter, one`); };
 $('#recallButton').onclick = () => { if (db.recent.length > 0) { const last = db.recent[0]; speak(`Repeat, Number, ${spellTicket(last.ticket)}, Counter, ${last.counter}`); } };
 $('#speedSlider').oninput = e => {
   const speed = parseFloat(e.target.value);
@@ -335,10 +335,10 @@ $('#voiceSelect').onchange = e => {
   db.states[currentRoom].voiceType = voiceType;
   socket.emit('set_voice', { room: currentRoom, voiceType });
 };
-$('#enableDeviceSound').onclick = () => { 
-  db.states[currentRoom].soundOn =!db.states[currentRoom].soundOn; 
+$('#enableDeviceSound').onclick = () => {
+  db.states[currentRoom].soundOn =!db.states[currentRoom].soundOn;
   socket.emit('set_sound', { room: currentRoom, soundOn: db.states[currentRoom].soundOn });
-  render(); 
+  render();
 };
 
 document.addEventListener('keydown', e => {
