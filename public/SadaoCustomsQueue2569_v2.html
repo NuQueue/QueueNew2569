@@ -132,8 +132,8 @@
             color: #000;
         }
 
-        @media print {
-   .no-print { display: none!important; }
+       @media print {
+    .no-print { display: none!important; }
 
     @page {
         size: 80mm 60mm;
@@ -184,33 +184,33 @@
         text-align: center;
         padding-top: 0;
     }
-   .ticket-info.label {
+   .ticket-info .label {
         font-size: 18px;
         color: #000;
         margin: 0;
         line-height: 1.1;
     }
-   .ticket-info.q-number {
-        font-size: 80px;
+   .ticket-info .q-number {
+        font-size: 80px;  /* แก้ตรงนี้ 56 → 80 */
+        font-weight: bold;
+        line-height: 0.9;
+        margin: 0 0 1mm 0;
+        color: #000;
+    }
+   .ticket-info .plate {
+        font-size: 36px;  /* แก้ตรงนี้ 28 → 36 */
         font-weight: bold;
         line-height: 1;
         margin: 0 0 1mm 0;
         color: #000;
     }
-   .ticket-info.plate {
-        font-size: 36px;
-        font-weight: bold;
-        line-height: 1;
-        margin: 0 0 1mm 0;
-        color: #000;
-    }
-   .ticket-info.vehicle-type {
+   .ticket-info .vehicle-type {
         font-size: 16px;
         margin: 0.5mm 0 0;
         color: #000;
         font-weight: bold;
     }
-   .ticket-info.datetime {
+   .ticket-info .datetime {
         font-size: 16px;
         margin: 0.5mm 0 0 0;
         color: #000;
