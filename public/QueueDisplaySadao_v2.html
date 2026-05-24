@@ -21,11 +21,12 @@ header h1 { margin: 0; font-size: 20px; }
 main { max-width: 1100px; margin: 16px auto; padding: 0 12px; display: grid; gap: 14px; }
 .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
 .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.grow { flex: 1 1 0%; }
 input, button, select { border-radius: 10px; border: 1px solid var(--border); background: rgb(7, 20, 40); color: var(--ink); padding: 9px 12px; font-size: 14px; }
 button { cursor: pointer; border: 0; }
 .btn-ok { background: var(--ok); color: rgb(6, 37, 22); }
 .btn-warn { background: var(--warn); color: rgb(43, 36, 8); }
-.grid9 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; } /* ปรับเป็น 3 คอลัมน์ */
+.grid9 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .cbtn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: var(--blue); box-shadow: rgba(0, 0, 0, 0.35) 0 4px 12px; border-radius: 12px; padding: 18px; color: #fff; }
 .cbtn.num { font-size: 22px; font-weight: 700; }
 .cbtn.plate { font-size: 14px; opacity: 0.85; font-weight: normal; background: rgba(0,0,0,0.2); padding: 2px 8px; border-radius: 4px; margin: 2px 0; }
@@ -33,19 +34,36 @@ button { cursor: pointer; border: 0; }
 .stat { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
 .tile { background: rgb(8, 26, 48); border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; }
 .tiny { opacity: 0.85; font-size: 12px; }
-.big { font-weight: 800; font-size: 38px; }
+.big { font-weight: 800; font-size: 38px; letter-spacing: 0.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+input[type="range"] { width: 120px; }
 .display-wrap { max-width: 1400px; }
 .display-top { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; }
 .display-now { background: rgb(13, 35, 64); border: 1px solid var(--border); border-radius: 16px; padding: 18px; text-align: center; }
-.display-ticket { font-size: 96px; font-weight: 900; }
-.display-plate { font-size: 54px; font-weight: 700; color: #ffcf33; }
-.display-counter { font-size: 42px; margin-top: 4px; }
-.recent-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; } /* ปรับเป็น 3 แถว */
+.display-now h2 { margin: 0 0 6px; font-size: 28px; opacity: 0.9; }
+.display-ticket { font-size: 96px; font-weight: 900; letter-spacing: 0.04em; line-height: 1; margin: 8px 0; }
+.display-plate { font-size: 54px; font-weight: 700; color: #ffcf33; margin: 4px 0 12px 0; letter-spacing: 1px; }
+.display-counter { font-size: 42px; margin-top: 4px; opacity: 0.9; }
+.display-type { font-size: 20px; opacity: 0.8; margin-top: 4px; }
+.recent { background: rgb(13, 35, 64); border: 1px solid var(--border); border-radius: 16px; padding: 14px; }
+.recent-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .card { background: rgb(11, 29, 52); border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; }
+.card.t { font-size: 28px; font-weight: 800; }
+.card.p { font-size: 18px; color: #ffcf33; font-weight: bold; margin: 2px 0; }
+.card.c { opacity: 0.9; margin-top: 4px; font-size: 14px; }
+.card.type { font-size: 11px; opacity: 0.7; }
+.muted { opacity: 0.8; font-size: 12px; }
+.selectroom { display: flex; align-items: center; gap: 8px; }
+#voiceUnlock { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px; }
+#voiceUnlock button { font-size: 24px; padding: 20px 40px; background: #22c08a; color: #000; font-weight: bold; }
 </style>
 <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
+<div id="voiceUnlock">
+  <div style="color: #fff; font-size: 20px; text-align: center;">🔊 กดปุ่มเพื่อเปิดใช้งานเสียง</div>
+  <button id="unlockVoiceBtn">คลิกเพื่อเปิดเสียง</button>
+  <div style="color: #aaa; font-size: 14px;">Chrome บังคับให้กด 1 ครั้งก่อนถึงจะพูดได้</div>
+</div>
 <header>
   <h1>Queue System</h1>
   <div class="mode-select">
@@ -55,23 +73,41 @@ button { cursor: pointer; border: 0; }
     <span id="chipDisplay" class="chip">Customer</span>
   </div>
   <div class="mode-select">
-    <button id="enableDeviceSound" class="chip">🔊 Speaker: ON</button>
-    <span id="clock" class="chip">00:00</span>
+    <span class="chip"><span class="dot on"></span>Server: ON</span>
+    <button id="enableDeviceSound" class="chip" style="font-weight: 700;">🔊 Speaker: ON</button>
+    <span id="clock" class="chip">03:15 PM</span>
   </div>
 </header>
 <main id="officerView">
   <section class="panel">
     <div class="stat">
-      <div class="tile"><div class="tiny">Current</div><div id="current" class="big">-</div></div>
-      <div class="tile"><div class="tiny">Waiting</div><div id="next" class="big" style="color: #ffcf33;">0</div></div>
+      <div class="tile"><div class="tiny">Current Serving</div><div id="current" class="big">-</div></div>
+      <div class="tile"><div class="tiny">Queues Waiting</div><div id="next" class="big" style="color: #ffcf33;">0 คิว</div></div>
       <div class="tile">
-        <button id="repeat" style="width:100%; margin-bottom:5px">Repeat last</button>
-        <button id="testVoice" style="width:100%">Test voice</button>
+        <div class="tiny">Voice</div>
+        <div class="row" style="justify-content:center;margin-top:6px">
+          <label class="tiny">Speed</label>
+          <input id="speedSlider" type="range" min="0.5" max="1.2" step="0.05" value="0.9">
+          <span id="speedValue">0.90x</span>
+        </div>
+        <div class="row" style="justify-content:center;margin-top:6px">
+          <label class="tiny">Voice</label>
+          <select id="voiceSelect" style="width:140px">
+            <option value="auto">Auto</option>
+            <option value="male">ผู้ชาย</option>
+            <option value="female">ผู้หญิง</option>
+            <option value="child">เด็ก</option>
+          </select>
+        </div>
       </div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button id="repeat">Repeat last</button>
+      <button id="testVoice">Test voice</button>
     </div>
   </section>
   <section class="panel">
-    <div class="muted">Call next (press 1–9)</div>
+    <div class="muted">Call next by counter (press keys 1–9)</div>
     <div id="grid" class="grid9"></div>
   </section>
 </main>
@@ -82,65 +118,239 @@ button { cursor: pointer; border: 0; }
       <div id="dTicket" class="display-ticket">-</div>
       <div id="dPlate" class="display-plate">-</div>
       <div id="dCounter" class="display-counter">Counter -</div>
+      <div id="dType" class="display-type">-</div>
+      <div class="row" style="justify-content:center;margin-top:10px">
+        <label class="tiny">Speed</label>
+        <input id="speedSliderDisplay" type="range" min="0.5" max="1.2" step="0.05" value="0.9">
+        <span id="speedValueDisplay">0.90x</span>
+      </div>
     </div>
     <div class="recent">
-      <h3>Counters Active</h3>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <h3>Counters Active</h3>
+        <button id="recallButton" class="chip">🔊 Recall</button>
+      </div>
       <div id="recentList" class="recent-list"></div>
     </div>
   </section>
 </main>
 <script>
+function log(msg) { console.log(msg); }
+
 const socket = io();
 const TYPES = { car: { prefix: 'A', name: 'Car', color: '#1e88e5' }, Motorcycle: { prefix: 'B', name: 'Motorcycle', color: '#43a047' }, tta: { prefix: 'C', name: 'TTA', color: '#fb8c00' } };
-let currentRoom = 'car', currentView = 'officer', db = {};
+
+let currentRoom = 'car';
+let currentView = 'officer';
+let db = {};
+
+let voices = [];
+let voiceReady = false;
+let speechQueue = [];
+let isSpeaking = false;
+
+function loadVoices() {
+  voices = speechSynthesis.getVoices();
+  if (voices.length > 0) {
+    voiceReady = true;
+    log('✅ โหลดเสียงสำเร็จ: ' + voices.length + ' เสียง');
+  }
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+socket.on('init_state', (serverDB) => {
+  db = serverDB;
+  render();
+  log('✅ เชื่อมต่อ Server สำเร็จ');
+});
+
+socket.on('update_state', (serverDB) => {
+  const oldRecent = db.recent[0]?.ticket;
+  db = serverDB;
+  render();
+  if (currentView === 'display' && db.states?.[currentRoom]?.soundOn && db.recent[0]?.ticket!== oldRecent && db.recent[0]) {
+    const last = db.recent[0];
+    speak(`Number, ${spellTicket(last.ticket)}, Counter, ${last.counter}`);
+  }
+});
+
+socket.on('call_failed', (msg) => {
+  log('⚠ ' + msg);
+  alert(msg);
+});
+
 const $ = s => document.querySelector(s);
 
-socket.on('update_state', (serverDB) => { db = serverDB; render(); });
+function spellTicket(ticketStr) {
+  const prefix = ticketStr.charAt(0);
+  const numbers = ticketStr.slice(1).split('').map(d => ({
+    '0':'zero','1':'one','2':'two','3':'three','4':'four',
+    '5':'five','6':'six','7':'seven','8':'eight','9':'nine'
+  }[d]||d)).join(', ');
+  return prefix + ', ' + numbers;
+}
+
+function queueSpeech(text, rate) {
+  speechQueue.push({ text, rate });
+  if (!isSpeaking) processSpeechQueue();
+}
+
+function processSpeechQueue() {
+  if (speechQueue.length === 0) {
+    isSpeaking = false;
+    return;
+  }
+  isSpeaking = true;
+  const { text, rate } = speechQueue.shift();
+  doSpeak(text, rate);
+}
+
+function speak(text) {
+  if (currentView!== 'display' ||!db.states?.[currentRoom]?.soundOn) return;
+  if (!voiceReady) return;
+  const rate = db.states[currentRoom]?.speed || 0.9;
+  queueSpeech(text, rate);
+}
+
+function doSpeak(text, rate) {
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-US';
+  u.rate = rate || 0.9;
+
+  const voiceType = db.states[currentRoom]?.voiceType || 'auto';
+  let selectedVoice = null;
+
+  if (voiceType === 'male') {
+    selectedVoice = voices.find(v => v.lang.startsWith('en') && /male|david|mark|alex|daniel|fred|google uk english male/i.test(v.name));
+  } else if (voiceType === 'female') {
+    selectedVoice = voices.find(v => v.lang.startsWith('en') && /female|samantha|zira|victoria|karen|moira|tessa|google uk english female/i.test(v.name));
+  } else if (voiceType === 'child') {
+    selectedVoice = voices.find(v => v.lang.startsWith('en') && /child|kid/i.test(v.name));
+  }
+
+  u.voice = selectedVoice || voices.find(v => v.lang.startsWith('en')) || voices[0];
+
+  u.onend = () => {
+    socket.emit('speak_finished');
+    setTimeout(() => processSpeechQueue(), 300);
+  };
+
+  u.onerror = () => setTimeout(() => processSpeechQueue(), 300);
+  speechSynthesis.speak(u);
+}
+
+function callNext(counter) {
+  socket.emit('call_next', { counter, room: currentRoom });
+}
 
 function render() {
   if (!db.queueData) return;
-  // อัปเดตข้อมูลหน้า Office
-  $('#current').textContent = db.activeCalls[Object.keys(db.activeCalls).find(k=>db.activeCalls[k]?.type === currentRoom)]?.ticket || "-";
-  $('#next').textContent = db.queueData[currentRoom].filter(q=>!q.called).length;
-  
-  // Render 9 Counters (Grid)
+  const waitingCount = db.queueData[currentRoom].filter(q =>!q.called).length;
+  const activeCalls = Object.values(db.activeCalls).filter(c => c && c.type === currentRoom);
+  $('#current').textContent = activeCalls.length > 0? activeCalls[activeCalls.length - 1].ticket : "-";
+  $('#next').textContent = waitingCount + " คิว";
+  updateViewUI();
   $('#grid').innerHTML = '';
   for (let i = 1; i <= 9; i++) {
     const btn = document.createElement('button'); btn.className = 'cbtn';
     const r = db.activeCalls[i];
-    btn.innerHTML = r ? `<div class="num">${r.ticket}</div><div class="plate">${r.plate || '-'}</div><div class="label">Counter ${i}</div>` : `<div class="num">-</div><div class="label">Counter ${i}</div>`;
-    btn.onclick = () => socket.emit('call_next', { counter: i, room: currentRoom });
-    $('#grid').appendChild(btn);
+    if (r && r.ticket) {
+      btn.style.background = TYPES[r.type]?.color || '#2a64b6';
+      btn.innerHTML = `<div class="num">${r.ticket}</div><div class="plate">${r.plate || '-'}</div><div class="label">Counter ${i}</div>`;
+    } else {
+      btn.style.background = '#333'; btn.innerHTML = `<div class="num">-</div><div class="label">Counter ${i}</div>`;
+    }
+    btn.onclick = () => callNext(i); $('#grid').appendChild(btn);
   }
-  
-  // Render Customer Display
   if (db.recent.length > 0) {
     const last = db.recent[0];
-    $('#dTicket').textContent = last.ticket;
-    $('#dPlate').textContent = last.plate || "-";
-    $('#dCounter').textContent = `Counter ${last.counter}`;
+    $('#dTicket').textContent = last.ticket; $('#dPlate').textContent = last.plate || "-";
+    $('#dCounter').textContent = `Counter ${last.counter}`; $('#dType').textContent = TYPES[last.type]?.name || '-';
+    if (TYPES[last.type]) $('#dTicket').style.color = TYPES[last.type].color;
+  } else {
+    $('#dTicket').textContent = '-'; $('#dPlate').textContent = '-'; $('#dCounter').textContent = 'Counter -'; $('#dType').textContent = '-';
   }
-  
-  // Render Counters Active (3 cols)
-  let html = '';
+  let htmlCards = '';
   for (let i = 1; i <= 9; i++) {
     const r = db.activeCalls[i];
-    if (r) html += `<div class="card" style="border:1px solid ${TYPES[r.type].color}"><div>${r.ticket}</div><div style="font-size:10px">Counter ${i}</div></div>`;
+    if (r && r.ticket) {
+      const typeColor = TYPES[r.type]?.color || '#fff'; const typeName = TYPES[r.type]?.name || '-';
+      htmlCards += `<div class="card" style="border-color:${typeColor}; cursor:pointer;" onclick="window.recallSpecificCounter(${i})"><div class="t" style="color:${typeColor}">${r.ticket}</div><div class="p">${r.plate || '-'}</div><div class="c">Counter ${r.counter}</div><div class="type">${typeName}</div></div>`;
+    }
   }
-  $('#recentList').innerHTML = html;
+  $('#recentList').innerHTML = htmlCards;
+  if (db.states?.[currentRoom]) {
+    $('#speedValue').textContent = db.states[currentRoom].speed.toFixed(2) + 'x';
+    $('#speedValueDisplay').textContent = db.states[currentRoom].speed.toFixed(2) + 'x';
+    $('#speedSlider').value = db.states[currentRoom].speed; $('#speedSliderDisplay').value = db.states[currentRoom].speed;
+    $('#voiceSelect').value = db.states[currentRoom].voiceType || 'auto';
+    $('#enableDeviceSound').innerHTML = db.states[currentRoom].soundOn? '🔊 Speaker: ON' : '🔇 Speaker: OFF';
+  }
 }
 
-// Event Listeners เดิม
+window.recallSpecificCounter = function(counterNum) {
+  const r = db.activeCalls[counterNum];
+  if (r) speak(`Repeat, Number, ${spellTicket(r.ticket)}, Counter, ${r.counter}`);
+};
+
+function showOfficerView() { currentView = 'officer'; $('#officerView').style.display = 'block'; $('#displayView').style.display = 'none'; updateViewUI(); }
+function showDisplayView() { currentView = 'display'; $('#officerView').style.display = 'none'; $('#displayView').style.display = 'block'; updateViewUI(); }
+function updateViewUI() {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  if (currentView === 'officer') {
+    if (currentRoom === 'car') $('#chipOfficerCar').classList.add('active');
+    if (currentRoom === 'Motorcycle') $('#chipOfficerMotorcycle').classList.add('active');
+    if (currentRoom === 'tta') $('#chipOfficerTTA').classList.add('active');
+  } else { $('#chipDisplay').classList.add('active'); }
+}
+function switchRoom(room) { currentRoom = room; showOfficerView(); render(); }
+
+$('#chipOfficerCar').onclick = () => switchRoom('car');
+$('#chipOfficerMotorcycle').onclick = () => switchRoom('Motorcycle');
+$('#chipOfficerTTA').onclick = () => switchRoom('tta');
+$('#chipDisplay').onclick = () => { showDisplayView(); render(); };
+$('#repeat').onclick = () => { if (db.recent.length > 0) { const last = db.recent[0]; speak(`Repeat, Number, ${spellTicket(last.ticket)}, Counter, ${last.counter}`); } };
+$('#testVoice').onclick = () => { speak(`Test, Number, A, zero, zero, one, Counter, one`); };
+$('#recallButton').onclick = () => { if (db.recent.length > 0) { const last = db.recent[0]; speak(`Repeat, Number, ${spellTicket(last.ticket)}, Counter, ${last.counter}`); } };
+$('#speedSlider').oninput = e => {
+  const speed = parseFloat(e.target.value);
+  db.states[currentRoom].speed = speed;
+  socket.emit('set_speed', { room: currentRoom, speed });
+  render();
+};
+$('#speedSliderDisplay').oninput = e => {
+  const speed = parseFloat(e.target.value);
+  db.states[currentRoom].speed = speed;
+  socket.emit('set_speed', { room: currentRoom, speed });
+  render();
+};
+$('#voiceSelect').onchange = e => {
+  const voiceType = e.target.value;
+  db.states[currentRoom].voiceType = voiceType;
+  socket.emit('set_voice', { room: currentRoom, voiceType });
+};
+$('#enableDeviceSound').onclick = () => {
+  db.states[currentRoom].soundOn =!db.states[currentRoom].soundOn;
+  socket.emit('set_sound', { room: currentRoom, soundOn: db.states[currentRoom].soundOn });
+  render();
+};
+
 document.addEventListener('keydown', e => {
-  if(currentView === 'officer' && e.key >= '1' && e.key <= '9') socket.emit('call_next', { counter: parseInt(e.key), room: currentRoom });
+  if (currentView!== 'officer') return;
+  let num = parseInt(e.key);
+  if (num >= 1 && num <= 9) callNext(num);
 });
-$('#chipOfficerCar').onclick = () => { currentRoom = 'car'; render(); };
-$('#chipOfficerMotorcycle').onclick = () => { currentRoom = 'Motorcycle'; render(); };
-$('#chipOfficerTTA').onclick = () => { currentRoom = 'tta'; render(); };
-$('#chipDisplay').onclick = () => { 
-    currentView = (currentView === 'officer' ? 'display' : 'officer');
-    $('#officerView').style.display = currentView === 'officer' ? 'block' : 'none';
-    $('#displayView').style.display = currentView === 'display' ? 'block' : 'none';
+
+setInterval(() => { $('#clock').textContent = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }); }, 1000);
+
+document.getElementById('unlockVoiceBtn').onclick = () => {
+  const testUtter = new SpeechSynthesisUtterance('Voice activated');
+  testUtter.lang = 'en-US';
+  speechSynthesis.speak(testUtter);
+  document.getElementById('voiceUnlock').style.display = 'none';
+  log('✅ เปิดใช้งานเสียงแล้ว');
 };
 </script>
 </body>
