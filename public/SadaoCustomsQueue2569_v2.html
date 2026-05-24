@@ -132,7 +132,7 @@
             color: #000;
         }
 
-       @media print {
+      @media print {
     .no-print { display: none!important; }
 
     @page {
@@ -159,20 +159,20 @@
         width: 80mm;
         height: 60mm;
         margin: 0;
-        padding: 1mm 2mm;
+        padding: 0;
         font-family: 'Sarabun', 'TH SarabunPSK', sans-serif;
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
+        display: block;
         box-sizing: border-box;
         page-break-after: avoid;
         page-break-inside: avoid;
+        position: relative;
     }
    .ticket-logo {
-        width: 28mm;
-        margin-right: 2mm;
-        margin-top: 1mm;
-        flex-shrink: 0;
+        position: absolute;
+        top: 1mm;
+        left: 1mm;
+        width: 15mm;  /* โลโก้เล็กสุด 15mm */
+        opacity: 0.9;
     }
    .ticket-logo img {
         width: 100%;
@@ -180,38 +180,39 @@
         display: block;
     }
    .ticket-info {
-        flex: 1;
+        width: 100%;
         text-align: center;
-        padding-top: 0;
+        padding-top: 2mm;
     }
    .ticket-info .label {
-        font-size: 18px;
+        font-size: 12px;
         color: #000;
         margin: 0;
-        line-height: 1.1;
+        line-height: 1;
     }
    .ticket-info .q-number {
-        font-size: 80px;  /* แก้ตรงนี้ 56 → 80 */
-        font-weight: bold;
-        line-height: 0.9;
-        margin: 0 0 1mm 0;
+        font-size: 95px;  /* ดันสุด 95px */
+        font-weight: 900;
+        line-height: 0.8;
+        margin: 0;
         color: #000;
+        letter-spacing: -2px;  /* บีบให้แน่นขึ้น */
     }
    .ticket-info .plate {
-        font-size: 36px;  /* แก้ตรงนี้ 28 → 36 */
+        font-size: 30px;
         font-weight: bold;
         line-height: 1;
-        margin: 0 0 1mm 0;
+        margin: 1mm 0 0 0;
         color: #000;
     }
    .ticket-info .vehicle-type {
-        font-size: 16px;
+        font-size: 12px;
         margin: 0.5mm 0 0;
         color: #000;
         font-weight: bold;
     }
    .ticket-info .datetime {
-        font-size: 16px;
+        font-size: 12px;
         margin: 0.5mm 0 0 0;
         color: #000;
     }
