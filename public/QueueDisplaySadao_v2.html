@@ -201,7 +201,7 @@ function processSpeechQueue() {
 function speak(text) {
   if (!db.states?.[currentRoom]?.soundOn) return;
   if (!voiceReady) return;
-  const rate = db.states[currentRoom]?.speed || 1.1;
+  const rate = db.states[currentRoom]?.speed || 0.9;
   queueSpeech(text, rate);
 }
 
@@ -209,7 +209,7 @@ function doSpeak(text, rate) {
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = 'en-US';
-  u.rate = rate || 1.1;
+  u.rate = rate || 0.9;
   const enVoice = voices.find(v => v.lang === 'en-US' || v.lang.startsWith('en'));
   if (enVoice) u.voice = enVoice;
 
@@ -297,9 +297,23 @@ $('#resetAll').onclick = () => {
 $('#repeat').onclick = () => { if (db.recent.length > 0) { const last = db.recent[0]; speak(`Repeat, Number, ${spellTicket(last.ticket)}, Counter, ${last.counter}`); } };
 $('#testVoice').onclick = () => { speak(`Test, Number, A, zero, zero, zero, one, Counter, one`); };
 $('#recallButton').onclick = () => { if (db.recent.length > 0) { const last = db.recent[0]; speak(`Repeat, Number, ${spellTicket(last.ticket)}, Counter, ${last.counter}`); } };
-$('#speedSlider').oninput = e => { db.states[currentRoom].speed = parseFloat(e.target.value); render(); };
-$('#speedSliderDisplay').oninput = e => { db.states[currentRoom].speed = parseFloat(e.target.value); render(); };
-$('#enableDeviceSound').onclick = () => { db.states[currentRoom].soundOn =!db.states[currentRoom].soundOn; render(); };
+$('#speedSlider').oninput = e => {
+  const speed = parseFloat(e.target.value);
+  db.states[currentRoom].speed = speed;
+  socket.emit('set_speed', { room: currentRoom, speed });
+  render();
+};
+$('#speedSliderDisplay').oninput = e => {
+  const speed = parseFloat(e.target.value);
+  db.states[currentRoom].speed = speed;
+  socket.emit('set_speed', { room: currentRoom, speed });
+  render();
+};
+$('#enableDeviceSound').onclick = () => { 
+  db.states[currentRoom].soundOn =!db.states[currentRoom].soundOn; 
+  socket.emit('set_sound', { room: currentRoom, soundOn: db.states[currentRoom].soundOn });
+  render(); 
+};
 
 document.addEventListener('keydown', e => {
   if (currentView!== 'officer') return;
