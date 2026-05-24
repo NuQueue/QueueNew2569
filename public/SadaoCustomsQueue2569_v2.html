@@ -133,91 +133,90 @@
         }
 
         @media print {
-            .no-print { display: none!important; }
-            
-            @page { 
-                size: 80mm 60mm; 
-                margin: 0; 
-            }
-            
-            html, body {
-                margin: 0!important; 
-                padding: 0!important;
-                height: 60mm!important;
-                width: 80mm!important;
-                overflow: hidden!important;
-            }
-            
-            #printArea {
-                display: block!important;
-                width: 80mm;
-                height: 60mm;
-                overflow: hidden;
-            }
-            
-            .ticket {
-                width: 80mm; 
-                height: 60mm;
-                margin: 0; 
-                padding: 4mm 4mm; 
-                font-family: 'Sarabun', 'TH SarabunPSK', sans-serif;
-                display: flex;
-                align-items: center; 
-                justify-content: flex-start;
-                box-sizing: border-box;
-                page-break-after: avoid;
-                page-break-inside: avoid;
-            }
-            .ticket-logo {
-                width: 28mm; 
-                margin-right: 4mm; 
-                flex-shrink: 0;
-                display: flex;
-                align-items: center;
-            }
-            .ticket-logo img {
-                width: 100%;
-                height: auto;
-                max-height: 45mm; 
-                display: block;
-            }
-            .ticket-info {
-                flex: 1;
-                text-align: center;
-                padding-top: 0;
-            }
-            .ticket-info .label {
-                font-size: 14px; 
-                color: #000;
-                margin: 0;
-                line-height: 1.1;
-            }
-            .ticket-info .q-number {
-                font-size: 72px; 
-                font-weight: bold;
-                line-height: 1;
-                margin: 0 0 1mm 0;
-                color: #000;
-            }
-            .ticket-info .plate {
-                font-size: 26px;
-                font-weight: bold;
-                line-height: 1;
-                margin: 0 0 1mm 0;
-                color: #000;
-            }
-            .ticket-info .vehicle-type {
-                font-size: 14px;
-                margin: 0.5mm 0 0;
-                color: #000;
-                font-weight: bold;
-            }
-            .ticket-info .datetime {
-                font-size: 12px;
-                margin: 0.5mm 0 0 0;
-                color: #000;
-            }
-        }
+    .no-print { display: none !important; }
+    
+    @page { 
+        size: 80mm 60mm; 
+        margin: 0; 
+    }
+    
+    /* ตัวการทำให้ออก 2 หน้า */
+    html, body {
+        margin: 0 !important; 
+        padding: 0 !important;
+        height: 60mm !important;
+        width: 80mm !important;
+        overflow: hidden !important;
+    }
+    
+    #printArea {
+        display: block !important;
+        width: 80mm;
+        height: 60mm;
+        overflow: hidden;
+    }
+    
+    .ticket {
+        width: 80mm; 
+        height: 60mm;
+        margin: 0; 
+        padding: 1mm 2mm; 
+        font-family: 'Sarabun', 'TH SarabunPSK', sans-serif;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        box-sizing: border-box;
+        page-break-after: avoid;
+        page-break-inside: avoid;
+    }
+    .ticket-logo {
+        width: 28mm;
+        margin-right: 2mm; 
+        margin-top: 1mm;
+        flex-shrink: 0;
+    }
+    .ticket-logo img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+    .ticket-info {
+        flex: 1;
+        text-align: center;
+        padding-top: 0;
+    }
+    .ticket-info .label {
+        font-size: 18px;
+        color: #000;
+        margin: 0;
+        line-height: 1.1;
+    }
+    .ticket-info .q-number {
+        font-size: 56px;
+        font-weight: bold;
+        line-height: 1;
+        margin: 0 0 1mm 0;
+        color: #000;
+    }
+    .ticket-info .plate {
+        font-size: 28px;
+        font-weight: bold;
+        line-height: 1;
+        margin: 0 0 1mm 0;
+        color: #000;
+    }
+    .ticket-info .vehicle-type {
+        font-size: 16px;
+        margin: 0.5mm 0 0;
+        color: #000;
+        font-weight: bold;
+    }
+    .ticket-info .datetime {
+        font-size: 16px;
+        margin: 0.5mm 0 0 0;
+        color: #000;
+    }
+}
     </style>
 </head>
 <body>
