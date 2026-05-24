@@ -5,7 +5,7 @@ const io = require('socket.io')(http, {
   cors: { origin: "*" }
 });
 const fs = require('fs');
-const https = require('https'); // เพิ่ม: สำหรับ self-ping
+const https = require('https');
 const DB_FILE = './db.json';
 
 app.use(express.static('public'));
@@ -15,7 +15,7 @@ const TYPES = { car: { prefix: 'A' }, Motorcycle: { prefix: 'B' }, tta: { prefix
 let queueDB;
 try {
   queueDB = JSON.parse(fs.readFileSync(DB_FILE));
-  console.log('โหลดคิวจาก /data/db.json สำเร็จ');
+  console.log('โหลดคิวจาก./db.json สำเร็จ');
 } catch (e) {
   queueDB = {
     queueData: { car: [], Motorcycle: [], tta: [] },
@@ -64,7 +64,6 @@ io.on('connection', (socket) => {
     saveDB();
     console.log(`Counter ${counter} เรียก ${currentCall.ticket}`);
 
-    // กันค้าง: ถ้า 15 วิยังไม่มีจอไหนส่ง speak_finished มา ให้ปลดล็อคเอง
     setTimeout(() => {
       if (callingLock) {
         callingLock = false;
@@ -76,6 +75,16 @@ io.on('connection', (socket) => {
   socket.on('speak_finished', () => {
     callingLock = false;
     console.log('ปลดล็อค: อ่านจบแล้ว');
+  });
+
+  // เพิ่ม: รับค่า Speed แล้วเซฟลง db.json
+  socket.on('set_speed', ({ room, speed }) => {
+    if (queueDB.states[room] && typeof speed === 'number') {
+      queueDB.states[room].speed = speed;
+      saveDB();
+      io.emit('update_state', queueDB);
+      console.log(`อัพเดท Speed: ${room} = ${speed}`);
+    }
   });
 
   socket.on('add_queue', ({ room, plate }) => {
@@ -204,8 +213,7 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => console.log('เครื่องหลุด:', socket.id));
 });
 
-// เพิ่ม: Self-ping ทุก 5 นาที กัน Render หลับ
-const SELF_URL = 'https://queuenew2569.onrender.com'; // เปลี่ยนเป็น URL ของคุณ
+const SELF_URL = 'https://queuenew2569.onrender.com';
 setInterval(() => {
   https.get(SELF_URL, (res) => {
     console.log(`Keep-alive ping: ${res.statusCode}`);
