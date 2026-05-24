@@ -201,7 +201,7 @@ function processSpeechQueue() {
 function speak(text) {
   if (!db.states?.[currentRoom]?.soundOn) return;
   if (!voiceReady) return;
-  const rate = db.states[currentRoom]?.speed || 0.9;
+  const rate = db.states[currentRoom]?.speed || 1.1;
   queueSpeech(text, rate);
 }
 
@@ -209,7 +209,7 @@ function doSpeak(text, rate) {
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = 'en-US';
-  u.rate = rate || 0.9;
+  u.rate = rate || 1.1;
   const enVoice = voices.find(v => v.lang === 'en-US' || v.lang.startsWith('en'));
   if (enVoice) u.voice = enVoice;
 
