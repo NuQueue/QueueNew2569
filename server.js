@@ -6,7 +6,7 @@ const io = require('socket.io')(http, {
 });
 const fs = require('fs');
 const https = require('https');
-const DB_FILE = './db.json'; // เปลี่ยนจาก /data/db.json
+const DB_FILE = './db.json';
 
 app.use(express.static('public'));
 
@@ -23,7 +23,11 @@ try {
     plateHistory: {},
     activeCalls: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null, 8: null, 9: null, 10: null },
     recent: [],
-    states: { car: { speed: 0.9, soundOn: true }, Motorcycle: { speed: 0.9, soundOn: true }, tta: { speed: 0.9, soundOn: true } }
+    states: { 
+      car: { speed: 0.9, soundOn: true, voiceType: 'auto' }, 
+      Motorcycle: { speed: 0.9, soundOn: true, voiceType: 'auto' }, 
+      tta: { speed: 0.9, soundOn: true, voiceType: 'auto' } 
+    }
   };
 }
 
@@ -78,7 +82,6 @@ io.on('connection', (socket) => {
     console.log('ปลดล็อค: อ่านจบแล้ว');
   });
 
-  // เพิ่มใหม่: รับค่า Speed จากหน้าบ้าน
   socket.on('set_speed', ({ room, speed }) => {
     console.log('รับ set_speed:', room, speed);
     if (queueDB.states[room] && typeof speed === 'number') {
@@ -86,6 +89,24 @@ io.on('connection', (socket) => {
       saveDB();
       io.emit('update_state', queueDB);
       console.log(`อัพเดท Speed: ${room} = ${speed}`);
+    }
+  });
+
+  socket.on('set_voice', ({ room, voiceType }) => {
+    console.log('รับ set_voice:', room, voiceType);
+    if (queueDB.states[room]) {
+      queueDB.states[room].voiceType = voiceType;
+      saveDB();
+      io.emit('update_state', queueDB);
+      console.log(`อัพเดท Voice: ${room} = ${voiceType}`);
+    }
+  });
+
+  socket.on('set_sound', ({ room, soundOn }) => {
+    if (queueDB.states[room]) {
+      queueDB.states[room].soundOn = soundOn;
+      saveDB();
+      io.emit('update_state', queueDB);
     }
   });
 
