@@ -100,7 +100,6 @@ input[type="range"] { width: 120px; }
           </select>
         </div>
       </div>
-    </div>
     <div class="row" style="margin-top:10px">
       <button id="repeat">Repeat last</button>
       <button id="resetAll" class="btn-warn">Reset all types</button>
@@ -170,7 +169,8 @@ socket.on('update_state', (serverDB) => {
   const oldRecent = db.recent[0]?.ticket;
   db = serverDB;
   render();
-  if (db.recent[0]?.ticket!== oldRecent && db.recent[0]) {
+  // แก้แล้ว: อ่านเฉพาะหน้า Customer และเปิดเสียงเท่านั้น
+  if (currentView === 'display' && db.states?.[currentRoom]?.soundOn && db.recent[0]?.ticket!== oldRecent && db.recent[0]) {
     const last = db.recent[0];
     speak(`Number, ${spellTicket(last.ticket)}, Counter, ${last.counter}`);
   }
@@ -208,7 +208,8 @@ function processSpeechQueue() {
 }
 
 function speak(text) {
-  if (!db.states?.[currentRoom]?.soundOn) return;
+  // กันอ่านซ้ำ: เฉพาะ Customer + เปิดเสียงเท่านั้น
+  if (currentView!== 'display' ||!db.states?.[currentRoom]?.soundOn) return;
   if (!voiceReady) return;
   const rate = db.states[currentRoom]?.speed || 0.9;
   queueSpeech(text, rate);
