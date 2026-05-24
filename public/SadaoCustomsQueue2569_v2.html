@@ -7,30 +7,30 @@
     <script src="/socket.io/socket.io.js"></script>
     <style>
         body { padding-top: 20px; font-family: 'Sarabun', 'TH SarabunPSK', sans-serif; background: #f0f2f5; margin: 0; }
-  .container { max-width: 900px; margin: 0 auto; padding: 20px; }
-  .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 20px; }
-  .type-selector { display: flex; gap: 10px; margin-bottom: 15px; }
-  .type-btn { flex: 1; padding: 12px; border: 2px solid #ddd; background: white; border-radius: 8px; cursor: pointer; font-size: 15px; transition: all 0.3s; }
-  .type-btn.active { background: #2196F3; color: white; border-color: #2196F3; }
+ .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+ .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 20px; }
+ .type-selector { display: flex; gap: 10px; margin-bottom: 15px; }
+ .type-btn { flex: 1; padding: 12px; border: 2px solid #ddd; background: white; border-radius: 8px; cursor: pointer; font-size: 15px; transition: all 0.3s; }
+ .type-btn.active { background: #2196F3; color: white; border-color: #2196F3; }
         input, select { width: 100%; padding: 12px; font-size: 16px; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; text-transform: uppercase; }
         input:invalid { border-color: #dc3545; }
-  .btn-row { display: flex; gap: 10px; }
-  .btn { flex: 1; padding: 15px; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
-  .btn-add { background: #4CAF50; color: white; }
-  .btn-print { background: #ff9800; color: white; }
-  .btn-search { background: #2196F3; color: white; }
-  .btn-clear { background: #dc3545; color: white; }
-  .btn:disabled { background: #ccc; cursor: not-allowed; }
-  .toast { position: fixed; top: 20px; right: 20px; padding: 12px 20px; background: #4CAF50; color: white; border-radius: 8px; display: none; z-index: 1001; font-weight: 600; }
-  .queue-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-  .queue-table th,.queue-table td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-  .queue-table th { background: #f5f5f5; }
-  .action-btn { padding: 4px 8px; margin: 0 2px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
-  .btn-edit { background: #ffc107; }
-  .btn-del { background: #dc3545; color: white; }
-  .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; }
-  .modal-content { background: white; margin: 3% auto; padding: 20px; width: 450px; border-radius: 8px; }
-  .error-msg {
+ .btn-row { display: flex; gap: 10px; }
+ .btn { flex: 1; padding: 15px; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
+ .btn-add { background: #4CAF50; color: white; }
+ .btn-print { background: #ff9800; color: white; }
+ .btn-search { background: #2196F3; color: white; }
+ .btn-clear { background: #dc3545; color: white; }
+ .btn:disabled { background: #ccc; cursor: not-allowed; }
+ .toast { position: fixed; top: 20px; right: 20px; padding: 12px 20px; background: #4CAF50; color: white; border-radius: 8px; display: none; z-index: 1001; font-weight: 600; }
+ .queue-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+ .queue-table th,.queue-table td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+ .queue-table th { background: #f5f5f5; }
+ .action-btn { padding: 4px 8px; margin: 0 2px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
+ .btn-edit { background: #ffc107; }
+ .btn-del { background: #dc3545; color: white; }
+ .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; }
+ .modal-content { background: white; margin: 3% auto; padding: 20px; width: 450px; border-radius: 8px; }
+ .error-msg {
 			color: #dc3545;
 			font-size: 18px;
 			font-weight: bold;
@@ -49,38 +49,38 @@
 			75% { transform: translateX(5px); }
 		}
 
-  .last-queue-box {
+ .last-queue-box {
             display: flex;
             gap: 15px;
             margin-bottom: 20px;
         }
-        .last-queue-item {
+       .last-queue-item {
             flex: 1;
             background: #f5f5f5;
             border-radius: 8px;
             padding: 15px;
             text-align: center;
         }
-        .last-queue-item .type-label {
+       .last-queue-item.type-label {
             font-size: 14px;
             color: #666;
             margin-bottom: 5px;
         }
-        .last-queue-item .queue-num {
+       .last-queue-item.queue-num {
             font-size: 62px;
             font-weight: bold;
             color: #2196F3;
             margin: 5px 0;
         }
-        .last-queue-item .plate-num {
+       .last-queue-item.plate-num {
             font-size: 16px;
             color: #333;
         }
 
-        .ticket-preview {
-            width: 80mm; 
+       .ticket-preview {
+            width: 80mm;
             height: 60mm;
-            margin: 0 auto 15px auto; 
+            margin: 0 auto 15px auto;
             padding: 3mm;
             font-family: 'Sarabun', 'TH SarabunPSK', sans-serif;
             display: flex;
@@ -89,78 +89,77 @@
             background: #fafafa;
             box-sizing: border-box;
         }
-        .ticket-preview .ticket-logo {
+       .ticket-preview.ticket-logo {
             width: 18mm;
             margin-right: 3mm;
         }
-        .ticket-preview .ticket-logo img {
+       .ticket-preview.ticket-logo img {
             width: 100%;
             height: auto;
         }
-        .ticket-preview .ticket-info {
+       .ticket-preview.ticket-info {
             flex: 1;
             text-align: center;
         }
-        .ticket-preview .label {
+       .ticket-preview.label {
             font-size: 10px;
             color: #000;
             margin-bottom: 0.5mm;
         }
-        .ticket-preview .q-number {
+       .ticket-preview.q-number {
             font-size: 36px;
             font-weight: bold;
             line-height: 1;
             margin: 0.5mm 0 2mm 0;
             color: #000;
         }
-        .ticket-preview .plate {
+       .ticket-preview.plate {
             font-size: 24px;
             font-weight: bold;
             line-height: 1;
             margin: 0.5mm 0 2mm 0;
             color: #000;
         }
-        .ticket-preview .vehicle-type {
+       .ticket-preview.vehicle-type {
             font-size: 10px;
             margin-top: 1mm;
             color: #000;
             font-weight: bold;
         }
-        .ticket-preview .datetime {
+       .ticket-preview.datetime {
             font-size: 10px;
             margin-top: 1mm;
             color: #000;
         }
 
         @media print {
-    .no-print { display: none !important; }
-    
-    @page { 
-        size: 80mm 60mm; 
-        margin: 0; 
+   .no-print { display: none!important; }
+
+    @page {
+        size: 80mm 60mm;
+        margin: 0;
     }
-    
-    /* ตัวการทำให้ออก 2 หน้า */
+
     html, body {
-        margin: 0 !important; 
-        padding: 0 !important;
-        height: 60mm !important;
-        width: 80mm !important;
-        overflow: hidden !important;
+        margin: 0!important;
+        padding: 0!important;
+        height: 60mm!important;
+        width: 80mm!important;
+        overflow: hidden!important;
     }
-    
+
     #printArea {
-        display: block !important;
+        display: block!important;
         width: 80mm;
         height: 60mm;
         overflow: hidden;
     }
-    
-    .ticket {
-        width: 80mm; 
+
+   .ticket {
+        width: 80mm;
         height: 60mm;
-        margin: 0; 
-        padding: 1mm 2mm; 
+        margin: 0;
+        padding: 1mm 2mm;
         font-family: 'Sarabun', 'TH SarabunPSK', sans-serif;
         display: flex;
         align-items: flex-start;
@@ -169,49 +168,49 @@
         page-break-after: avoid;
         page-break-inside: avoid;
     }
-    .ticket-logo {
+   .ticket-logo {
         width: 28mm;
-        margin-right: 2mm; 
+        margin-right: 2mm;
         margin-top: 1mm;
         flex-shrink: 0;
     }
-    .ticket-logo img {
+   .ticket-logo img {
         width: 100%;
         height: auto;
         display: block;
     }
-    .ticket-info {
+   .ticket-info {
         flex: 1;
         text-align: center;
         padding-top: 0;
     }
-    .ticket-info .label {
+   .ticket-info.label {
         font-size: 18px;
         color: #000;
         margin: 0;
         line-height: 1.1;
     }
-    .ticket-info .q-number {
+   .ticket-info.q-number {
         font-size: 56px;
         font-weight: bold;
         line-height: 1;
         margin: 0 0 1mm 0;
         color: #000;
     }
-    .ticket-info .plate {
+   .ticket-info.plate {
         font-size: 28px;
         font-weight: bold;
         line-height: 1;
         margin: 0 0 1mm 0;
         color: #000;
     }
-    .ticket-info .vehicle-type {
+   .ticket-info.vehicle-type {
         font-size: 16px;
         margin: 0.5mm 0 0;
         color: #000;
         font-weight: bold;
     }
-    .ticket-info .datetime {
+   .ticket-info.datetime {
         font-size: 16px;
         margin: 0.5mm 0 0 0;
         color: #000;
@@ -330,7 +329,6 @@
             render();
         });
 
-        // เด้ง Modal เฉพาะเครื่องที่กดเพิ่มคิว
         socket.on('queue_added_success', (newQueue) => {
             lastQueueItem = newQueue;
             showTicketModal(newQueue);
@@ -420,10 +418,20 @@
             printArea.innerHTML = html;
             printArea.style.display = 'block';
 
-            setTimeout(() => {
-                window.print();
-                printArea.style.display = 'none';
-            }, 100);
+            const img = printArea.querySelector('img');
+            const doPrint = () => {
+                setTimeout(() => {
+                    window.print();
+                    printArea.style.display = 'none';
+                }, 100);
+            };
+
+            if (img.complete) {
+                doPrint();
+            } else {
+                img.onload = doPrint;
+                img.onerror = doPrint;
+            }
         }
 
         function render() {
@@ -439,7 +447,7 @@
             const tbody = document.getElementById('queueTableBody');
             tbody.innerHTML = '';
             const allQueues = [...db.queueData.car,...db.queueData.Motorcycle,...db.queueData.tta]
-      .sort((a, b) => new Date(b.time) - new Date(a.time));
+     .sort((a, b) => new Date(b.time) - new Date(a.time));
 
             allQueues.forEach(item => {
                 const tr = document.createElement('tr');
@@ -465,7 +473,6 @@
             }
         }
 
-        // Event Listeners
         document.querySelectorAll('.type-btn').forEach(btn => {
             btn.onclick = () => {
                 document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
@@ -476,9 +483,19 @@
 
         document.getElementById('addBtn').onclick = addQueue;
         document.getElementById('clearBtn').onclick = clearAll;
+
+        // แก้แล้ว: ดึงคิวล่าสุดจาก DB กลางเสมอ ไม่ใช้ตัวแปร local
         document.getElementById('printLastBtn').onclick = () => {
-            if (lastQueueItem) printTicket(lastQueueItem);
+            if (!db.queueData) return;
+            const all = [...db.queueData.car,...db.queueData.Motorcycle,...db.queueData.tta];
+            if (all.length === 0) {
+                showToast('ยังไม่มีคิวในระบบ', '#f44336');
+                return;
+            }
+            const lastItem = all.sort((a, b) => new Date(b.time) - new Date(a.time))[0];
+            printTicket(lastItem);
         };
+
         document.getElementById('printFromModalBtn').onclick = () => {
             if (lastQueueItem) {
                 printTicket(lastQueueItem);
@@ -508,8 +525,8 @@
             const tbody = document.getElementById('queueTableBody');
             tbody.innerHTML = '';
             const allQueues = [...db.queueData.car,...db.queueData.Motorcycle,...db.queueData.tta]
-      .filter(q => q.queue.includes(search) || q.plate.includes(search))
-      .sort((a, b) => new Date(b.time) - new Date(a.time));
+     .filter(q => q.queue.includes(search) || q.plate.includes(search))
+     .sort((a, b) => new Date(b.time) - new Date(a.time));
 
             allQueues.forEach(item => {
                 const tr = document.createElement('tr');
