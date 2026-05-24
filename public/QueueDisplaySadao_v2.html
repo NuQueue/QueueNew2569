@@ -63,7 +63,6 @@ input[type="range"] { width: 120px; }
   <div style="color: #fff; font-size: 20px; text-align: center;">🔊 กดปุ่มเพื่อเปิดใช้งานเสียง</div>
   <button id="unlockVoiceBtn">คลิกเพื่อเปิดเสียง</button>
   <div style="color: #aaa; font-size: 14px;">Chrome บังคับให้กด 1 ครั้งก่อนถึงจะพูดได้</div>
-</div>
 <header>
   <h1>Queue System</h1>
   <div class="mode-select">
@@ -89,6 +88,15 @@ input[type="range"] { width: 120px; }
           <label class="tiny">Speed</label>
           <input id="speedSlider" type="range" min="0.5" max="1.2" step="0.05" value="0.9">
           <span id="speedValue">0.90x</span>
+        </div>
+        <div class="row" style="justify-content:center;margin-top:6px">
+          <label class="tiny">Voice</label>
+          <select id="voiceSelect" style="width:140px">
+            <option value="auto">Auto</option>
+            <option value="male">ผู้ชาย</option>
+            <option value="female">ผู้หญิง</option>
+            <option value="child">เด็ก</option>
+          </select>
         </div>
       </div>
     </div>
@@ -145,7 +153,8 @@ function loadVoices() {
   voices = speechSynthesis.getVoices();
   if (voices.length > 0) {
     voiceReady = true;
-    log('✅ โหลดเสียงสำเร็จ');
+    log('✅ โหลดเสียงสำเร็จ: ' + voices.length + ' เสียง');
+    console.log(voices.map(v => v.name));
   }
 }
 speechSynthesis.onvoiceschanged = loadVoices;
@@ -210,8 +219,19 @@ function doSpeak(text, rate) {
   const u = new SpeechSynthesisUtterance(text);
   u.lang = 'en-US';
   u.rate = rate || 0.9;
-  const enVoice = voices.find(v => v.lang === 'en-US' || v.lang.startsWith('en'));
-  if (enVoice) u.voice = enVoice;
+  
+  const voiceType = db.states[currentRoom]?.voiceType || 'auto';
+  let selectedVoice = null;
+  
+  if (voiceType === 'male') {
+    selectedVoice = voices.find(v => v.lang.startsWith('en') && /male|david|mark|alex|daniel|fred|google uk english male/i.test(v.name));
+  } else if (voiceType === 'female') {
+    selectedVoice = voices.find(v => v.lang.startsWith('en') && /female|samantha|zira|victoria|karen|moira|tessa|google uk english female/i.test(v.name));
+  } else if (voiceType === 'child') {
+    selectedVoice = voices.find(v => v.lang.startsWith('en') && /child|kid/i.test(v.name));
+  }
+  
+  u.voice = selectedVoice || voices.find(v => v.lang.startsWith('en')) || voices[0];
 
   u.onend = () => {
     socket.emit('speak_finished');
@@ -266,6 +286,7 @@ function render() {
     $('#speedValue').textContent = db.states[currentRoom].speed.toFixed(2) + 'x';
     $('#speedValueDisplay').textContent = db.states[currentRoom].speed.toFixed(2) + 'x';
     $('#speedSlider').value = db.states[currentRoom].speed; $('#speedSliderDisplay').value = db.states[currentRoom].speed;
+    $('#voiceSelect').value = db.states[currentRoom].voiceType || 'auto';
     $('#enableDeviceSound').innerHTML = db.states[currentRoom].soundOn? '🔊 Speaker: ON' : '🔇 Speaker: OFF';
   }
 }
@@ -308,6 +329,11 @@ $('#speedSliderDisplay').oninput = e => {
   db.states[currentRoom].speed = speed;
   socket.emit('set_speed', { room: currentRoom, speed });
   render();
+};
+$('#voiceSelect').onchange = e => {
+  const voiceType = e.target.value;
+  db.states[currentRoom].voiceType = voiceType;
+  socket.emit('set_voice', { room: currentRoom, voiceType });
 };
 $('#enableDeviceSound').onclick = () => { 
   db.states[currentRoom].soundOn =!db.states[currentRoom].soundOn; 
